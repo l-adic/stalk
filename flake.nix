@@ -16,7 +16,7 @@
                 hixProject =
                   final.haskell-nix.project {
                     src = ./.;
-                    compiler-nix-name = "ghc901";
+                    compiler-nix-name = "ghc902";
                     evalSystem = "x86_64-linux";
                   };
                 }
@@ -31,7 +31,7 @@
                   pkgs.hixProject.shellFor {
                     tools = {
                       cabal = "3.6.0.0"; # this is the version specified in all of the *.cabal files.
-                      haskell-language-server = "latest";
+                      haskell-language-server = "2.4.0.0";
                     };
                   };
                };

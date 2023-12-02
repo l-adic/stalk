@@ -4,14 +4,15 @@ source-repository-package
   tag: f46302f4d07438a067067471cf8185338018f584
   --sha256: T4GR33cyii0yctb33lcGw9r51z4KT3TLKIjfUEnYOHc=
   subdir: 
-    category
-    client
-    common
-    duoids
-    ghc
-    th
-    integrations/concat/integration
-    plugin
+   category
+   client
+   common
+   duoids
+   ghc
+   th
+   integrations/concat/integration
+   integrations/vec/integration
+   plugin
 
 
 source-repository-package
@@ -21,9 +22,9 @@ source-repository-package
   --sha256: +dHHk6DgW4tkdex7QKI2iZQ2t9vAIQzj5rE9ZE5JF3s=
   subdir:
     classes
-    cinline
-    cknown
     satisfy
+    known
+    inline
 
 source-repository-package
   type: git
