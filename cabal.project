@@ -10,18 +10,9 @@ source-repository-package
     duoids
     ghc
     th
+    integrations/concat/integration
+    plugin
 
--- source-repository-package
---   type: git
---   location: https://github.com/con-kitty/categorifier.git
---   tag: 09f997be45f641620a759f94e22844a51e6c4291
---   subdir: integrations/concat/integration
-
--- source-repository-package
---   type: git
---   location: https://github.com/con-kitty/categorifier.git
---   tag: 6321dab53677de419f1b57302fe343c5a1341768
---   subdir: plugin
 
 source-repository-package
   type: git

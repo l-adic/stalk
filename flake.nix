@@ -26,16 +26,6 @@
         flake = pkgs.hixProject.flake {};
       in flake // rec
            { legacyPackages = pkgs;
-             packages =  
-               { foo = flake.packages."straw:lib:straw";
-                 all = pkgs.symlinkJoin {
-                   name = "all";
-                   paths = with packages;
-                     [ straw
-                     ];
-                 };
-                 default = packages.all;
-               };
              devShells =
                { default =
                   pkgs.hixProject.shellFor {
