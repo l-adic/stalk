@@ -1,6 +1,7 @@
 source-repository-package
   type: git
   location: https://github.com/con-kitty/categorifier.git
+  -- master branch as of 12/3/23
   tag: f46302f4d07438a067067471cf8185338018f584
   --sha256: T4GR33cyii0yctb33lcGw9r51z4KT3TLKIjfUEnYOHc=
   subdir: 
@@ -18,8 +19,9 @@ source-repository-package
 source-repository-package
   type: git
   location: https://github.com/con-kitty/concat.git
-  tag: 6321dab53677de419f1b57302fe343c5a1341768
-  --sha256: +dHHk6DgW4tkdex7QKI2iZQ2t9vAIQzj5rE9ZE5JF3s=
+  -- ghc9 branch as of 12/3/23
+  tag: 99ee4981c096180abe99c24b12ff79e85d1817df
+  --sha256: LTKVbU2NQqA41hHUkSfgnBWzaiox3J/XT0ZqH1BqBNo=
   subdir:
     classes
     satisfy
@@ -29,6 +31,7 @@ source-repository-package
 source-repository-package
   type: git
   location: https://github.com/martyall/snarkl.git
+  -- master branch as of 12/3/23
   tag: 6e277f125ad6d5be4d8384b7894ec1d6b123552c
   --sha256: LwcDBULY3lBYRmHd+PbTUQ7ouoYRlVOXWpzquEDbnOQ=
 

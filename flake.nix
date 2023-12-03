@@ -30,7 +30,7 @@
                { default =
                   pkgs.hixProject.shellFor {
                     tools = {
-                      # cabal = "3.6.0.0"; # this is the version specified in all of the *.cabal files.
+                      cabal = {};
                       haskell-language-server = "2.4.0.0";
                     };
                   };
