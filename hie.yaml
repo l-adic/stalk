@@ -1,0 +1,16 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:straw"
+
+    - path: "./examples"
+      component: "straw:test:examples"
+
+    - path: "../categorifier/integrations/concat/integration/./"
+      component: "lib:categorifier-concat-integration"
+
+    - path: "../categorifier/integrations/vec/integration/./"
+      component: "lib:categorifier-vec-integration"
+
+    - path: "../categorifier/plugin/./"
+      component: "lib:categorifier-plugin"
