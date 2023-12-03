@@ -26,7 +26,7 @@
         flake = pkgs.hixProject.flake {};
       in flake // rec
            { legacyPackages = pkgs;
-             devShells =
+             devShell =
                { default =
                   pkgs.hixProject.shellFor {
                     tools = {
@@ -37,4 +37,7 @@
                };
            }
       );
+  nixConfig = {
+    allow-import-from-derivation = true;
+  };
 }
