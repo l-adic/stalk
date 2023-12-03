@@ -38,7 +38,7 @@
                   };
                   default = packages.all;
                 };
-             devShell =
+             devShells =
                { default =
                   pkgs.hixProject.shellFor {
                     tools = {
