@@ -11,6 +11,7 @@ import qualified Hedgehog.Main as Arithmetic
 import qualified Hedgehog.Main as Hedgehog
 import qualified "snarkl" Compile as Snarkl
 import qualified "snarkl" Toplevel as Snarkl
+import GHC.IO.Encoding (setLocaleEncoding, utf8)
 
 -- | Little helper to get our expressions into a form that Hedgehog can compare.
 comparable :: (Typeable ty) => Snarkl.Comp ty -> String
@@ -33,5 +34,6 @@ prop_simple_arith =
     interpretable Arithmetic.simpleArith [2] === 17
 
 main :: IO ()
-main =
+main = do
+  setLocaleEncoding utf8
   Hedgehog.defaultMain . pure $ Hedgehog.checkParallel $$(Hedgehog.discover)
