@@ -1,17 +1,17 @@
-{-# language DataKinds #-}
-{-# language FlexibleContexts #-}
-{-# language FlexibleInstances #-}
-{-# language MultiParamTypeClasses #-}
-{-# language PackageImports #-}
-{-# language PolyKinds #-}
-{-# language RebindableSyntax #-}
-{-# language ScopedTypeVariables #-}
-{-# language TemplateHaskell #-}
-{-# language TupleSections #-}
-{-# language TypeApplications #-}
-{-# language TypeFamilies #-}
-{-# language TypeOperators #-}
-{-# language UndecidableInstances #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PackageImports #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE RebindableSyntax #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 -- | A category for Snarkl
 module Straw
@@ -32,10 +32,10 @@ import Data.Typeable (Typeable)
 import Data.Vec.Lazy (Vec (..))
 import "snarkl" Syntax (fromRational)
 import qualified "snarkl" Syntax as Snarkl
-import "snarkl" SyntaxMonad ((>>), (>>=), return)
+import "snarkl" SyntaxMonad (return, (>>), (>>=))
 import qualified "snarkl" SyntaxMonad as Snarkl
 import qualified "snarkl" TExpr as Snarkl
-import Prelude ((<$>), ($), (.), (+), (-), Bool, Either, Integer, Rational, error, fromInteger)
+import Prelude (Bool, Either, Integer, Rational, error, fromInteger, ($), (+), (-), (.), (<$>))
 
 data Straw a b = Straw
   {runStraw :: Snarkl.TExp (SnarklTy a) Rational -> Snarkl.Comp (SnarklTy b)}
@@ -45,6 +45,7 @@ instance Categorifier.RepCat Straw Rational (Integer, Integer) where
     n <- Snarkl.fst_pair p
     d <- Snarkl.snd_pair p
     Snarkl.return $ n Snarkl./ d
+
   -- __FIXME__: This doesn't guarantee we have an integer in the numerator.
   reprC = Straw $ \r -> Snarkl.pair r (Snarkl.fromRational 1)
 
@@ -58,19 +59,19 @@ instance
     Snarkl.fst_pair p >>= Snarkl.set (a, 0)
     Snarkl.snd_pair p
       >>= \a' ->
-            Snarkl.forall [0..last] $
-              \i -> Snarkl.get (a', i) >>= Snarkl.set (a, i + 1)
+        Snarkl.forall [0 .. last] $
+          \i -> Snarkl.get (a', i) >>= Snarkl.set (a, i + 1)
     return a
   reprC = Straw $ \a -> do
     let last = Nat.reflectToNum (Proxy :: Proxy n)
     let subLen = last + 1
     h <- Snarkl.get (a, 0)
     t <- Snarkl.arr subLen
-    Snarkl.forall [0..last] (\i -> Snarkl.get (a, i + 1) >>= Snarkl.set (t, i))
+    Snarkl.forall [0 .. last] (\i -> Snarkl.get (a, i + 1) >>= Snarkl.set (t, i))
     Snarkl.pair h t
 
 instance
-  LiftSnarklTy a =>
+  (LiftSnarklTy a) =>
   Categorifier.RepCat Straw (Vec ('S 'Z) a) (a, Vec 'Z a)
   where
   abstC = Straw $ \p -> do
@@ -81,11 +82,11 @@ instance
     h <- Snarkl.get (a, 0)
     Snarkl.pair h Snarkl.unit
 
-instance LiftSnarklTy a => Categorifier.RepCat Straw (Vec 'Z a) () where
+instance (LiftSnarklTy a) => Categorifier.RepCat Straw (Vec 'Z a) () where
   abstC = Straw return
   reprC = Straw return
 
-instance SnarklTy a ~ SnarklTy b => Categorifier.UnsafeCoerceCat Straw a b where
+instance (SnarklTy a ~ SnarklTy b) => Categorifier.UnsafeCoerceCat Straw a b where
   unsafeCoerceK = Straw return
 
 -- type TF =
@@ -95,14 +96,22 @@ instance SnarklTy a ~ SnarklTy b => Categorifier.UnsafeCoerceCat Straw a b where
 
 -- | Mapping from Haskell types to Snarkl types.
 type family SnarklTy a :: Snarkl.Ty
+
 type instance SnarklTy () = 'Snarkl.TUnit
+
 type instance SnarklTy (a, b) = 'Snarkl.TProd (SnarklTy a) (SnarklTy b)
+
 -- type instance SnarklTy (a -> b) = 'Snarkl.TMu TF
 type instance SnarklTy Bool = 'Snarkl.TBool
+
 type instance SnarklTy (Either a b) = 'Snarkl.TSum (SnarklTy a) (SnarklTy b)
+
 type instance SnarklTy Integer = 'Snarkl.TField
+
 type instance SnarklTy Rational = 'Snarkl.TField
+
 type instance SnarklTy (Vec ('S n) a) = 'Snarkl.TArr (SnarklTy a)
+
 -- | Snarkl only supports non-empty sequences, but this exists for `Categorifier.RepCat`.
 type instance SnarklTy (Vec 'Z a) = 'Snarkl.TUnit
 
@@ -142,10 +151,11 @@ instance ConCat.MonoidalPCat Straw where
     Snarkl.pair a b
 
 instance ConCat.MonoidalSCat Straw where
-  Straw f +++ Straw g = Straw $
-    Snarkl.case_sum
-      (\a -> f a Snarkl.>>= Snarkl.inl)
-      (\b -> g b Snarkl.>>= Snarkl.inr)
+  Straw f +++ Straw g =
+    Straw $
+      Snarkl.case_sum
+        (\a -> f a Snarkl.>>= Snarkl.inl)
+        (\b -> g b Snarkl.>>= Snarkl.inr)
 
 instance ConCat.ProductCat Straw where
   exl = Straw Snarkl.fst_pair
@@ -181,14 +191,14 @@ instance ConCat.TerminalCat Straw
 
 instance ConCat.ConstCat Straw Bool where
   const = Straw . bool (\_ -> return Snarkl.false) (\_ -> return Snarkl.true)
-  
+
 instance ConCat.ConstCat Straw Rational where
   const a = Straw $ \_ -> return $ Snarkl.fromRational a
-  
+
 instance ConCat.ConstCat Straw () where
   const () = Straw $ \_ -> return $ Snarkl.unit
 
-instance Nat.SNatI n => ConCat.AddCat Straw (Vec ('S n)) Rational where
+instance (Nat.SNatI n) => ConCat.AddCat Straw (Vec ('S n)) Rational where
   sumAC = Straw $ \a ->
     Snarkl.iterM
       (Nat.reflectToNum (Proxy :: Proxy n))
@@ -215,5 +225,15 @@ instance ConCat.NumCat Straw Rational where
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return $ a Snarkl.* b
+  subC = Straw $ \p -> do
+    a <- Snarkl.fst_pair p
+    b <- Snarkl.snd_pair p
+    Snarkl.return $ a Snarkl.- b
   negateC = Straw $ Snarkl.return . Snarkl.negate
   powIC = error "no exponents"
+
+instance ConCat.EqCat Straw Rational where
+  equal = Straw $ \p -> do
+    a <- Snarkl.fst_pair p
+    b <- Snarkl.snd_pair p
+    Snarkl.return $ Snarkl.eq a b

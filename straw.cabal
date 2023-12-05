@@ -48,6 +48,7 @@ test-suite examples
     main-is: Examples.hs
     other-modules: Examples.Snarkl
                  , Examples.Straw
+                 , Examples.Arithmetic
     build-depends:    base
                     , categorifier-category
                     , categorifier-client
