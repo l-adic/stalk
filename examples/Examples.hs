@@ -37,19 +37,20 @@ prop_simple_arith =
   Hedgehog.property $
     interpretable Arithmetic.simpleArith [2] === 17
 
--- prop_prog1 :: Hedgehog.Property
--- prop_prog1 = 
---   Hedgehog.property $
---     interpretable SnarklUnitTests.prog1 [1,2,1] === -240
+prop_prog1 :: Hedgehog.Property
+prop_prog1 = 
+  Hedgehog.property $
+    interpretable SnarklUnitTests.prog1 [1,2,1] === -240
 
-prop_bool_prog6 :: Hedgehog.Property
-prop_bool_prog6 = 
-  Hedgehog.property $ do
-    x <- Hedgehog.forAll Gen.bool_
-    y <- Hedgehog.forAll Gen.bool_
-    let x' = if x then 1 else 0
-    let y' = if y then 1 else 0
-    interpretable SnarklUnitTests.bool_prog9 [x',y'] === if (x && y) then 1 else 0   
+-- prop_bool_prog6 :: Hedgehog.Property
+-- prop_bool_prog6 = 
+--   Hedgehog.property $ do
+--     x <- Hedgehog.forAll Gen.bool_
+--     y <- Hedgehog.forAll Gen.bool_
+--     let x' = if x then 1 else 0
+--     let y' = if y then 1 else 0
+--     let expr = (x && y)
+--     interpretable (SnarklUnitTests.catExpr expr) [x',y'] === if (x && y) then 1 else 0   
 
 main :: IO ()
 main = do

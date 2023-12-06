@@ -2,6 +2,7 @@
 {-# LANGUAGE PackageImports #-}
 {-# LANGUAGE RebindableSyntax #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE GADTs #-}
 
 module Examples.SnarklUnitTests where
 
@@ -21,23 +22,23 @@ ifThenElse :: Bool -> a -> a -> a
 ifThenElse True t _ = t
 ifThenElse False _ f = f
 
--- prog1 :: Snarkl.Comp 'TField
--- prog1 =
---   let prog :: (Bool, Rational) -> Rational
---       prog (x, y) = 
---         let u = y + 2
---             v = if x then y else y -- if z
---             w = if x then y else y
---         in u*u - (w*u*u*y*y*v)
+prog1 :: Snarkl.Comp 'TField
+prog1 =
+  let prog :: (Bool, (Rational, Bool)) -> Rational
+      prog (x, (y, z)) = 
+        let u = y + 2
+            v = if x then y else y -- if z
+            w = if x then y else y
+        in u*u - (w*u*u*y*y*v)
 
---       compiledProg :: Straw (Bool, Rational) Rational
---       compiledProg = Categorify.expression prog
---   in do
---     x <- Snarkl.fresh_input
---     y <- Snarkl.fresh_input 
---     -- z <- Snarkl.fresh_input
---     p <- pair x y
---     runStraw compiledProg p
+      compiledProg :: Straw (Bool, (Rational, Bool)) Rational
+      compiledProg = Categorify.expression prog
+  in do
+    x <- Snarkl.fresh_input
+    y <- Snarkl.fresh_input 
+    z <- Snarkl.fresh_input
+    p <- pair x (pair y z)
+    runStraw compiledProg p
 
 -- -- | 1. A standalone "program" in the expression language
 -- prog1 
@@ -75,6 +76,15 @@ bool_prog9 =
     y <- Snarkl.fresh_input 
     p <- pair x y
     runStraw compiledProg p
+
+-- {-# INLINE catExpr #-}
+-- catExpr expr = 
+--     let compiledExpr = Categorify.expression expr
+--     in do
+--         x <- Snarkl.fresh_input
+--         y <- Snarkl.fresh_input 
+--         p <- pair x y
+--         runStraw compiledExpr p        
 
 -- -- | 9. 'and' test
 -- bool_prog9 
