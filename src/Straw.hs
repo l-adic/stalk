@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PackageImports #-}
 {-# LANGUAGE PolyKinds #-}
@@ -89,11 +90,6 @@ instance (LiftSnarklTy a) => Categorifier.RepCat Straw (Vec 'Z a) () where
 instance (SnarklTy a ~ SnarklTy b) => Categorifier.UnsafeCoerceCat Straw a b where
   unsafeCoerceK = Straw return
 
--- type TF =
---   'Snarkl.TFSum
---     ('Snarkl.TFConst 'Snarkl.TField)
---     ('Snarkl.TFSum 'Snarkl.TFId ('Snarkl.TFProd 'Snarkl.TFId 'Snarkl.TFId))
-
 -- | Mapping from Haskell types to Snarkl types.
 type family SnarklTy a :: Snarkl.Ty
 
@@ -115,6 +111,8 @@ type instance SnarklTy (Vec ('S n) a) = 'Snarkl.TArr (SnarklTy a)
 -- | Snarkl only supports non-empty sequences, but this exists for `Categorifier.RepCat`.
 type instance SnarklTy (Vec 'Z a) = 'Snarkl.TUnit
 
+type instance SnarklTy (a -> b) = 'Snarkl.TFun (SnarklTy a) (SnarklTy b)
+
 -- | This class exists because we can`t do @`Typeable` . `SnarklTy`@. It has a
 --   universal instance.
 class (Snarkl.Derive (SnarklTy a), Typeable (SnarklTy a), Snarkl.Zippable (SnarklTy a)) => LiftSnarklTy a
@@ -124,8 +122,8 @@ instance (Snarkl.Derive (SnarklTy a), Typeable (SnarklTy a), Snarkl.Zippable (Sn
 instance ConCat.OpCon (ConCat.Coprod Straw) (ConCat.Sat LiftSnarklTy) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
--- instance ConCat.OpCon (ConCat.Exp Straw) (ConCat.Sat LiftSnarklTy) where
---   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
+instance ConCat.OpCon (ConCat.Exp Straw) (ConCat.Sat LiftSnarklTy) where
+  inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
 instance ConCat.OpCon (ConCat.Prod Straw) (ConCat.Sat LiftSnarklTy) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
@@ -135,11 +133,15 @@ instance ConCat.Category Straw where
   id = Straw Snarkl.return
   Straw f . Straw g = Straw $ \x -> g x Snarkl.>>= f
 
--- instance ConCat.ClosedCat Straw where
---   -- curry :: (TExp ('TProd a b) -> Comp c) -> (TExp a -> Comp ('Mu TF))
---   curry (Straw f) = Straw $ \
+instance ConCat.ClosedCat Straw where
+  -- curry :: (TExp ('TProd a b) -> Comp c) -> (TExp a -> Comp ('Mu TF))
+  curry :: (ConCat.Ok3 Straw a b c) => Straw (ConCat.Prod Straw a b) c -> Straw a (ConCat.Exp Straw b c)
+  curry (Straw f) = Straw $ Snarkl.curry f
+  uncurry :: (ConCat.Ok3 Straw a b c) => Straw a (ConCat.Exp Straw b c) -> Straw (ConCat.Prod Straw a b) c
+  uncurry (Straw f) = Straw $ Snarkl.uncurry f
 
 instance ConCat.CoproductCat Straw where
+  inl :: (ConCat.Ok2 Straw a b) => Straw a (ConCat.Coprod Straw a b)
   inl = Straw Snarkl.inl
   inr = Straw Snarkl.inr
   jam = Straw $ Snarkl.case_sum Snarkl.return Snarkl.return
