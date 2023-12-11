@@ -51,14 +51,12 @@ prop_prog1 =
 --     let y' = if y then 1 else 0
 --     let expr = (x && y)
 --     interpretable (SnarklUnitTests.catExpr expr) [x',y'] === if (x && y) then 1 else 0
-
+--
 main :: IO ()
 main = do
   setLocaleEncoding utf8
-  let a = interpretable SnarklUnitTests.prog1 [1, 2, 3]
-  print a
+  Hedgehog.defaultMain . pure $ Hedgehog.checkParallel $$(Hedgehog.discover)
 
--- Hedgehog.defaultMain . pure $ Hedgehog.checkParallel $$(Hedgehog.discover)
 {-
 
       prog ((x, y), _) =
