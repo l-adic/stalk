@@ -1,6 +1,6 @@
-{-# language PackageImports #-}
-{-# language RebindableSyntax #-}
-{-# language ScopedTypeVariables #-}
+{-# LANGUAGE PackageImports #-}
+{-# LANGUAGE RebindableSyntax #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Examples.Straw
   ( mult_ex,
@@ -16,12 +16,13 @@ where
 import qualified Categorifier.Categorify as Categorify
 import Categorifier.Vec.Client ()
 import Data.Bool (bool)
-import Data.Vec.Lazy (Vec (..), (!))
-import Prelude ((+), (*), (.), ($), Bool (..), Either (..), Rational, const, either, fromInteger, id, sum)
+import Data.Either (fromLeft)
+import Data.Vec.Lazy (Vec (..))
+import Straw
 import "snarkl" Syntax (fromRational)
 import "snarkl" SyntaxMonad ((>>=))
 import qualified "snarkl" SyntaxMonad as Snarkl
-import Straw
+import Prelude (Bool (..), Either (..), Rational, fromInteger, sum, ($), (*), (+), (.))
 
 -- * Basic
 
@@ -34,8 +35,8 @@ mult_ex x y = x * y
 arr_ex :: Rational -> Rational
 arr_ex x =
   let a = x ::: x ::: VNil
-   -- in (a ! 0) + (a ! 1)
-   in sum a
+   in -- in (a ! 0) + (a ! 1)
+      sum a
 
 p1 = runStraw (Categorify.expression arr_ex) 1.0
 
@@ -53,4 +54,4 @@ comp2 = Right 0
 test1 =
   Snarkl.fresh_input
     >>= runStraw
-      (Categorify.expression $ either id (const False) . bool comp2 comp1)
+      (Categorify.expression $ fromLeft False . bool comp2 comp1)

@@ -1,30 +1,36 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PackageImports #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RebindableSyntax #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore "Use newtype instead of data" #-}
 
 -- | A category for Snarkl
 module Straw
   ( Straw (..),
+    SnarklTy,
   )
 where
 
+import Categorifier.Category
+  ( UnsafeCoerceCat (..),
+  )
 import qualified Categorifier.Category as Categorifier
-import qualified Categorifier.Vec.Client as Categorifier
+import Categorifier.Vec.Client ()
 import qualified ConCat.Category as ConCat
-import Control.Monad ((<=<))
 import Data.Bool (bool)
 import qualified Data.Constraint as Constraint
+import Data.Functor.Const (Const (..))
 import Data.Proxy (Proxy (..))
 import Data.Type.Nat (Nat (..))
 import qualified Data.Type.Nat as Nat
@@ -35,7 +41,7 @@ import qualified "snarkl" Syntax as Snarkl
 import "snarkl" SyntaxMonad (return, (>>), (>>=))
 import qualified "snarkl" SyntaxMonad as Snarkl
 import qualified "snarkl" TExpr as Snarkl
-import Prelude (Bool, Either, Integer, Rational, error, fromInteger, ($), (+), (-), (.), (<$>))
+import Prelude (Bool, Either, Integer, Rational, error, fromInteger, ($), (+), (.))
 
 data Straw a b = Straw
   {runStraw :: Snarkl.TExp (SnarklTy a) Rational -> Snarkl.Comp (SnarklTy b)}
@@ -86,14 +92,6 @@ instance (LiftSnarklTy a) => Categorifier.RepCat Straw (Vec 'Z a) () where
   abstC = Straw return
   reprC = Straw return
 
-instance (SnarklTy a ~ SnarklTy b) => Categorifier.UnsafeCoerceCat Straw a b where
-  unsafeCoerceK = Straw return
-
--- type TF =
---   'Snarkl.TFSum
---     ('Snarkl.TFConst 'Snarkl.TField)
---     ('Snarkl.TFSum 'Snarkl.TFId ('Snarkl.TFProd 'Snarkl.TFId 'Snarkl.TFId))
-
 -- | Mapping from Haskell types to Snarkl types.
 type family SnarklTy a :: Snarkl.Ty
 
@@ -115,6 +113,13 @@ type instance SnarklTy (Vec ('S n) a) = 'Snarkl.TArr (SnarklTy a)
 -- | Snarkl only supports non-empty sequences, but this exists for `Categorifier.RepCat`.
 type instance SnarklTy (Vec 'Z a) = 'Snarkl.TUnit
 
+type instance SnarklTy (a -> b) = 'Snarkl.TFun (SnarklTy a) (SnarklTy b)
+
+type instance SnarklTy (Const Rational b) = 'Snarkl.TField
+
+instance (SnarklTy a ~ SnarklTy b) => Categorifier.UnsafeCoerceCat Straw a b where
+  unsafeCoerceK = Straw return
+
 -- | This class exists because we can`t do @`Typeable` . `SnarklTy`@. It has a
 --   universal instance.
 class (Snarkl.Derive (SnarklTy a), Typeable (SnarklTy a), Snarkl.Zippable (SnarklTy a)) => LiftSnarklTy a
@@ -124,8 +129,8 @@ instance (Snarkl.Derive (SnarklTy a), Typeable (SnarklTy a), Snarkl.Zippable (Sn
 instance ConCat.OpCon (ConCat.Coprod Straw) (ConCat.Sat LiftSnarklTy) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
--- instance ConCat.OpCon (ConCat.Exp Straw) (ConCat.Sat LiftSnarklTy) where
---   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
+instance ConCat.OpCon (ConCat.Exp Straw) (ConCat.Sat LiftSnarklTy) where
+  inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
 instance ConCat.OpCon (ConCat.Prod Straw) (ConCat.Sat LiftSnarklTy) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
@@ -135,11 +140,15 @@ instance ConCat.Category Straw where
   id = Straw Snarkl.return
   Straw f . Straw g = Straw $ \x -> g x Snarkl.>>= f
 
--- instance ConCat.ClosedCat Straw where
---   -- curry :: (TExp ('TProd a b) -> Comp c) -> (TExp a -> Comp ('Mu TF))
---   curry (Straw f) = Straw $ \
+instance ConCat.ClosedCat Straw where
+  -- curry :: (TExp ('TProd a b) -> Comp c) -> (TExp a -> Comp ('Mu TF))
+  curry :: (ConCat.Ok3 Straw a b c) => Straw (ConCat.Prod Straw a b) c -> Straw a (ConCat.Exp Straw b c)
+  curry (Straw f) = Straw $ Snarkl.curry f
+  uncurry :: (ConCat.Ok3 Straw a b c) => Straw a (ConCat.Exp Straw b c) -> Straw (ConCat.Prod Straw a b) c
+  uncurry (Straw f) = Straw $ Snarkl.uncurry f
 
 instance ConCat.CoproductCat Straw where
+  inl :: (ConCat.Ok2 Straw a b) => Straw a (ConCat.Coprod Straw a b)
   inl = Straw Snarkl.inl
   inr = Straw Snarkl.inr
   jam = Straw $ Snarkl.case_sum Snarkl.return Snarkl.return
@@ -237,3 +246,17 @@ instance ConCat.EqCat Straw Rational where
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return $ Snarkl.eq a b
+
+cat ::
+  (Typeable (SnarklTy a)) =>
+  (Typeable (SnarklTy b)) =>
+  Snarkl.TExp (SnarklTy (a -> b)) Rational ->
+  Straw a b
+cat f = Straw $ \x -> return $ Snarkl.TEApp f x
+
+lowerCat ::
+  (Typeable (SnarklTy a)) =>
+  (Typeable (SnarklTy b)) =>
+  Straw a b ->
+  Snarkl.Comp (SnarklTy (a -> b))
+lowerCat (Straw f) = Snarkl.lambda f

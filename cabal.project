@@ -2,8 +2,8 @@ source-repository-package
   type: git
   location: https://github.com/con-kitty/categorifier.git
   -- master branch as of 12/3/23
-  tag: f46302f4d07438a067067471cf8185338018f584
-  --sha256: T4GR33cyii0yctb33lcGw9r51z4KT3TLKIjfUEnYOHc=
+  tag: 2eb124f2fbb3ced9ddf60872f571011da4e26dbf
+  --sha256: QLF8PQq6vPwhqXoDs4Txu4Fu3Z9R/rQ6fHWAdIpV/1c=
   subdir: 
    category
    client
@@ -29,11 +29,11 @@ source-repository-package
     inline
 
 source-repository-package
-  type: git
-  location: https://github.com/martyall/snarkl.git
-  -- master branch as of 12/3/23
-  tag: 6e277f125ad6d5be4d8384b7894ec1d6b123552c
-  --sha256: LwcDBULY3lBYRmHd+PbTUQ7ouoYRlVOXWpzquEDbnOQ=
+ type: git
+ location: https://github.com/martyall/snarkl.git
+ -- lambdas branch
+ tag: 234b5f1752901ccb0ad1c039b5f9e8f52369a0ac
+ --sha256: xjplr5MT+i0zeV85i7ymWBigf/6jIFtQ/sBZUzSQt0c=
 
 constraints:
     PyF >=0.9.0 && <0.10
