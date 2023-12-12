@@ -8,15 +8,11 @@ module Examples.SnarklUnitTests where
 
 import qualified Categorifier.Categorify as Categorify
 import Categorifier.Vec.Client ()
-import Data.Bool (bool)
-import Data.Vec.Lazy (Vec (..), (!))
-import GHC.Base (undefined)
 import Straw
-import TExpr (TExp, TFunct (..), Ty (TField))
-import "snarkl" Syntax (fromRational)
+import TExpr (Ty (TField))
 import "snarkl" SyntaxMonad (pair, (>>=))
 import qualified "snarkl" SyntaxMonad as Snarkl
-import Prelude (Bool (..), Either (..), Integer, Rational, const, either, fromInteger, id, sum, ($), (&&), (*), (+), (-), (.), (==))
+import Prelude (Bool (..), Rational, fromInteger, (&&), (*), (+), (-))
 
 -- we need the because we enabled rebindable syntax
 ifThenElse :: Bool -> a -> a -> a
@@ -28,8 +24,8 @@ prog1 =
   let prog :: (Bool, (Rational, Bool)) -> Rational
       prog (x, (y, z)) =
         let u = y + 2
-            v = if z then y else y
-            w = if x then y else y
+            v = if z then y else y + 1
+            w = if x then y else y + 2
          in u * u - (w * u * u * y * y * v)
 
       compiledProg :: Straw (Bool, (Rational, Bool)) Rational

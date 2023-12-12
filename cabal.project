@@ -2,7 +2,7 @@ source-repository-package
   type: git
   location: https://github.com/con-kitty/categorifier.git
   -- master branch as of 12/3/23
-  tag: f46302f4d07438a067067471cf8185338018f584
+  tag: 2eb124f2fbb3ced9ddf60872f571011da4e26dbf
   --sha256: T4GR33cyii0yctb33lcGw9r51z4KT3TLKIjfUEnYOHc=
   subdir: 
    category

@@ -37,10 +37,13 @@ library
                     , categorifier-vec-integration
                     , concat-classes
                     , constraints
+                    , lens
                     , fin
                     , snarkl
                     , vec
     default-language: Haskell2010
+    ghc-options: -fwarn-unused-imports
+                 -Werror
 
 test-suite examples
     type: exitcode-stdio-1.0
@@ -49,6 +52,8 @@ test-suite examples
     other-modules: Examples.Snarkl
                  , Examples.Straw
                  , Examples.Arithmetic
+                 , Examples.SnarklUnitTests
+                 , Examples.Lens
     build-depends:    base
                     , categorifier-category
                     , categorifier-client
@@ -61,8 +66,12 @@ test-suite examples
                     , snarkl
                     , straw
                     , vec
+                    , lens
     default-language: Haskell2010
-    ghc-options: -fplugin Categorifier
+    ghc-options: -O2
+                 -fplugin Categorifier
+                 -- No idea what this is doing but some things (e.g. complicatedLens) don't compile without it
+                 -fplugin-opt Categorifier:defer-failures
                  -fplugin-opt Categorifier:hierarchy:Categorifier.Hierarchy.ConCat.classHierarchy
                  -fplugin-opt Categorifier:lookup:Categorifier.Core.MakerMap.baseSymbolLookup
                  -fplugin-opt Categorifier:lookup:Categorifier.Vec.Integration.symbolLookup
@@ -71,3 +80,6 @@ test-suite examples
                  -- need -fno-enable-rewrite-rules to avoid `(# ... #)`
                  -fno-enable-rewrite-rules
                  -fno-ignore-interface-pragmas
+                 -fexpose-all-unfoldings
+                 -fwarn-unused-imports
+                 -Werror

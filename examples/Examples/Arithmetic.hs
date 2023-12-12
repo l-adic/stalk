@@ -7,14 +7,11 @@ module Examples.Arithmetic (simpleBool, simpleArith) where
 
 import qualified Categorifier.Categorify as Categorify
 import Categorifier.Vec.Client ()
-import Data.Bool (bool)
-import Data.Vec.Lazy (Vec (..), (!))
 import Straw
-import TExpr (TExp, TFunct (..), Ty (TField))
-import "snarkl" Syntax (fromRational)
+import TExpr (Ty (TField))
 import "snarkl" SyntaxMonad (pair, (>>=))
 import qualified "snarkl" SyntaxMonad as Snarkl
-import Prelude (Bool (..), Either (..), Rational, const, either, fromInteger, id, sum, ($), (&&), (*), (+), (-), (.), (==))
+import Prelude (Bool (..), Rational, fromInteger, (&&), (*), (+), (-), (==))
 
 -- we need the because we enabled rebindable syntax
 ifThenElse :: Bool -> a -> a -> a
