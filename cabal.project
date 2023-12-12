@@ -3,7 +3,7 @@ source-repository-package
   location: https://github.com/con-kitty/categorifier.git
   -- master branch as of 12/3/23
   tag: 2eb124f2fbb3ced9ddf60872f571011da4e26dbf
-  --sha256: T4GR33cyii0yctb33lcGw9r51z4KT3TLKIjfUEnYOHc=
+  --sha256: QLF8PQq6vPwhqXoDs4Txu4Fu3Z9R/rQ6fHWAdIpV/1c=
   subdir: 
    category
    client
@@ -33,7 +33,7 @@ source-repository-package
  location: https://github.com/martyall/snarkl.git
  -- lambdas branch
  tag: 234b5f1752901ccb0ad1c039b5f9e8f52369a0ac
- --sha256: LwcDBULY3lBYRmHd+PbTUQ7ouoYRlVOXWpzquEDbnOQ=
+ --sha256: xjplr5MT+i0zeV85i7ymWBigf/6jIFtQ/sBZUzSQt0c=
 
 constraints:
     PyF >=0.9.0 && <0.10
