@@ -10,11 +10,10 @@ module Examples.Lens where
 import qualified Categorifier.Categorify as Categorify
 import Categorifier.Client
 import Control.Lens
-import Data.Vec.Lazy (Vec (..))
 import Snarkl.Language (Ty (TField), pair, (>>=))
 import qualified Snarkl.Language.SyntaxMonad as Snarkl
 import Straw
-import Prelude (Rational, foldl, fromInteger)
+import Prelude (Rational, fromInteger)
 
 data Point = Point {_x :: Rational, _y :: Rational}
 
@@ -34,7 +33,7 @@ simpleLens :: Snarkl.Comp 'TField
 simpleLens =
   let prog :: Point -> Rational
       prog p =
-        let atom = Atom 32 p 1
+        let atom = Atom 32 p 2
             f :: Atom -> Rational -> Atom
             f a n = a & elem +~ n
          in f atom 10 ^. elem

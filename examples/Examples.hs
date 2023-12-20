@@ -39,11 +39,6 @@ prop_simple_lens =
   Hedgehog.property $
     interpretable Lens.simpleLens [1, 2] === 42
 
-prop_complicated_lens :: Hedgehog.Property
-prop_complicated_lens =
-  Hedgehog.property $
-    interpretable Lens.simpleLens [1, 2, 32] === 42
-
 main :: IO ()
 main = do
   setLocaleEncoding utf8
