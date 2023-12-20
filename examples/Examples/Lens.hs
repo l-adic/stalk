@@ -32,15 +32,14 @@ $(makeLenses ''Atom)
 
 simpleLens :: Snarkl.Comp 'TField
 simpleLens =
-  let prog :: (Rational, Rational) -> Rational
-      prog (x, y) =
-        let p = Point x y
-            atom = Atom 32 p 1
+  let prog :: Point -> Rational
+      prog p =
+        let atom = Atom 32 p 1
             f :: Atom -> Rational -> Atom
             f a n = a & elem +~ n
          in f atom 10 ^. elem
 
-      compiledProg :: Straw (Rational, Rational) Rational
+      compiledProg :: Straw Point Rational
       compiledProg = Categorify.expression prog
    in do
         x <- Snarkl.fresh_input
@@ -48,6 +47,7 @@ simpleLens =
         p <- pair x y
         runStraw compiledProg p
 
+{-
 complicatedLens :: Snarkl.Comp 'TField
 complicatedLens =
   let prog :: (Rational, (Rational, Rational)) -> Rational
@@ -68,3 +68,4 @@ complicatedLens =
         yz <- pair y z
         p <- pair x yz
         runStraw compiledProg p
+-}
