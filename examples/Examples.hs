@@ -44,7 +44,7 @@ prop_simple_lens =
 prop_validate_sudoku :: Hedgehog.Property
 prop_validate_sudoku =
   Hedgehog.property $
-    validateSudoku (sudokuFromList validPuzzule) === True
+    interpretable (concat validPuzzule) === True
 
 prop_invalidate_sudoku :: Hedgehog.Property
 prop_invalidate_sudoku =
