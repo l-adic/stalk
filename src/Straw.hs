@@ -3,7 +3,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RebindableSyntax #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -30,31 +29,25 @@ import Categorifier.Vec.Client ()
 import qualified ConCat.Category as ConCat
 import Data.Bool (bool)
 import qualified Data.Constraint as Constraint
+import Data.Field.Galois (GaloisField)
 import Data.Functor.Const (Const (..))
 import Data.Proxy (Proxy (..))
 import Data.Type.Nat (Nat (..))
 import qualified Data.Type.Nat as Nat
 import Data.Typeable (Typeable)
 import Data.Vec.Lazy (Vec (..))
-import Snarkl.Language (fromRational, return, (>>), (>>=))
+import Snarkl.Field (F_BN128)
+import Snarkl.Language (return, (>>), (>>=))
 import qualified Snarkl.Language as Snarkl
-import Prelude (Bool, Either, Integer, Rational, error, fromInteger, ($), (+), (.))
+import Prelude (Bool, Either, error, fromInteger, ($), (+), (.))
 
-data Straw a b = Straw
-  {runStraw :: Snarkl.TExp (SnarklTy a) Rational -> Snarkl.Comp (SnarklTy b)}
-
-instance Categorifier.RepCat Straw Rational (Integer, Integer) where
-  abstC = Straw $ \p -> do
-    n <- Snarkl.fst_pair p
-    d <- Snarkl.snd_pair p
-    Snarkl.return $ n Snarkl./ d
-
-  -- __FIXME__: This doesn't guarantee we have an integer in the numerator.
-  reprC = Straw $ \r -> Snarkl.pair r (Snarkl.fromRational 1)
+-- | Mapping from Haskell types to Snarkl types.
+data Straw k a b = Straw
+  {runStraw :: Snarkl.TExp (SnarklTy a) k -> Snarkl.Comp (SnarklTy b) k}
 
 instance
-  (Nat.SNatI n, LiftSnarklTy a) =>
-  Categorifier.RepCat Straw (Vec ('S ('S n)) a) (a, Vec ('S n) a)
+  (Nat.SNatI n, LiftSnarklTy a k, GaloisField k, Typeable (SnarklTy a)) =>
+  Categorifier.RepCat (Straw k) (Vec ('S ('S n)) a) (a, Vec ('S n) a)
   where
   abstC = Straw $ \p -> do
     let last = Nat.reflectToNum (Proxy @n)
@@ -74,8 +67,8 @@ instance
     Snarkl.pair h t
 
 instance
-  (LiftSnarklTy a) =>
-  Categorifier.RepCat Straw (Vec ('S 'Z) a) (a, Vec 'Z a)
+  (LiftSnarklTy k a, GaloisField k) =>
+  Categorifier.RepCat (Straw k) (Vec ('S 'Z) a) (a, Vec 'Z a)
   where
   abstC = Straw $ \p -> do
     a <- Snarkl.arr 1
@@ -85,11 +78,10 @@ instance
     h <- Snarkl.get (a, 0)
     Snarkl.pair h Snarkl.unit
 
-instance (LiftSnarklTy a) => Categorifier.RepCat Straw (Vec 'Z a) () where
+instance (LiftSnarklTy k a) => Categorifier.RepCat (Straw k) (Vec 'Z a) () where
   abstC = Straw return
   reprC = Straw return
 
--- | Mapping from Haskell types to Snarkl types.
 type family SnarklTy a :: Snarkl.Ty
 
 type instance SnarklTy () = 'Snarkl.TUnit
@@ -101,9 +93,7 @@ type instance SnarklTy Bool = 'Snarkl.TBool
 
 type instance SnarklTy (Either a b) = 'Snarkl.TSum (SnarklTy a) (SnarklTy b)
 
-type instance SnarklTy Integer = 'Snarkl.TField
-
-type instance SnarklTy Rational = 'Snarkl.TField
+type instance SnarklTy F_BN128 = 'Snarkl.TField
 
 type instance SnarklTy (Vec ('S n) a) = 'Snarkl.TArr (SnarklTy a)
 
@@ -112,65 +102,65 @@ type instance SnarklTy (Vec 'Z a) = 'Snarkl.TUnit
 
 type instance SnarklTy (a -> b) = 'Snarkl.TFun (SnarklTy a) (SnarklTy b)
 
-type instance SnarklTy (Const Rational b) = 'Snarkl.TField
+type instance SnarklTy (Const k b) = SnarklTy k
 
-instance (SnarklTy a ~ SnarklTy b) => Categorifier.UnsafeCoerceCat Straw a b where
+instance (SnarklTy a ~ SnarklTy b) => Categorifier.UnsafeCoerceCat (Straw k) a b where
   unsafeCoerceK = Straw return
 
 -- | This class exists because we can`t do @`Typeable` . `SnarklTy`@. It has a
 --   universal instance.
-class (Snarkl.Derive (SnarklTy a), Typeable (SnarklTy a), Snarkl.Zippable (SnarklTy a)) => LiftSnarklTy a
+class (Snarkl.Derive (SnarklTy a) k, Typeable (SnarklTy a), Snarkl.Zippable (SnarklTy a) k) => LiftSnarklTy k a
 
-instance (Snarkl.Derive (SnarklTy a), Typeable (SnarklTy a), Snarkl.Zippable (SnarklTy a)) => LiftSnarklTy a
+instance (Snarkl.Derive (SnarklTy a) k, Typeable (SnarklTy a), Snarkl.Zippable (SnarklTy a) k) => LiftSnarklTy k a
 
-instance ConCat.OpCon (ConCat.Coprod Straw) (ConCat.Sat LiftSnarklTy) where
+instance (GaloisField k) => ConCat.OpCon (ConCat.Coprod Straw) (ConCat.Sat (LiftSnarklTy k)) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
-instance ConCat.OpCon (ConCat.Exp Straw) (ConCat.Sat LiftSnarklTy) where
+instance ConCat.OpCon (ConCat.Exp Straw) (ConCat.Sat (LiftSnarklTy k)) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
-instance ConCat.OpCon (ConCat.Prod Straw) (ConCat.Sat LiftSnarklTy) where
+instance (GaloisField k) => ConCat.OpCon (ConCat.Prod (Straw k)) (ConCat.Sat (LiftSnarklTy k)) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
-instance ConCat.Category Straw where
-  type Ok Straw = LiftSnarklTy -- <whatever class SnarklTy ends up in, probably>
+instance ConCat.Category (Straw k) where
+  type Ok (Straw k) = LiftSnarklTy k -- <whatever class SnarklTy ends up in, probably>
   id = Straw Snarkl.return
   Straw f . Straw g = Straw $ \x -> g x Snarkl.>>= f
 
-instance ConCat.ClosedCat Straw where
+instance (GaloisField k) => ConCat.ClosedCat (Straw k) where
   -- curry :: (TExp ('TProd a b) -> Comp c) -> (TExp a -> Comp ('Mu TF))
-  curry :: (ConCat.Ok3 Straw a b c) => Straw (ConCat.Prod Straw a b) c -> Straw a (ConCat.Exp Straw b c)
+  curry :: (ConCat.Ok3 (Straw k) a b c) => Straw k (ConCat.Prod Straw a b) c -> Straw k a (ConCat.Exp (Straw k) b c)
   curry (Straw f) = Straw $ Snarkl.curry f
-  uncurry :: (ConCat.Ok3 Straw a b c) => Straw a (ConCat.Exp Straw b c) -> Straw (ConCat.Prod Straw a b) c
+  uncurry :: (ConCat.Ok3 (Straw k) a b c) => Straw k a (ConCat.Exp (Straw k) b c) -> Straw k (ConCat.Prod (Straw k) a b) c
   uncurry (Straw f) = Straw $ Snarkl.uncurry f
 
-instance ConCat.CoproductCat Straw where
-  inl :: (ConCat.Ok2 Straw a b) => Straw a (ConCat.Coprod Straw a b)
+instance (GaloisField k) => ConCat.CoproductCat (Straw k) where
+  inl :: (ConCat.Ok2 (Straw k) a b) => Straw k a (ConCat.Coprod (Straw k) a b)
   inl = Straw Snarkl.inl
   inr = Straw Snarkl.inr
   jam = Straw $ Snarkl.case_sum Snarkl.return Snarkl.return
 
-instance ConCat.MonoidalPCat Straw where
+instance (GaloisField k) => ConCat.MonoidalPCat (Straw k) where
   Straw f *** Straw g = Straw $ \p -> do
     a <- Snarkl.fst_pair p Snarkl.>>= f
     b <- Snarkl.snd_pair p Snarkl.>>= g
     Snarkl.pair a b
 
-instance ConCat.MonoidalSCat Straw where
+instance (GaloisField k) => ConCat.MonoidalSCat (Straw k) where
   Straw f +++ Straw g =
     Straw $
       Snarkl.case_sum
         (\a -> f a Snarkl.>>= Snarkl.inl)
         (\b -> g b Snarkl.>>= Snarkl.inr)
 
-instance ConCat.ProductCat Straw where
+instance (GaloisField k) => ConCat.ProductCat (Straw k) where
   exl = Straw Snarkl.fst_pair
   exr = Straw Snarkl.snd_pair
   dup = Straw $ \x -> Snarkl.pair x x
 
-instance ConCat.BraidedPCat Straw
+instance (GaloisField k) => ConCat.BraidedPCat (Straw k)
 
-instance ConCat.DistribCat Straw where
+instance (GaloisField k) => ConCat.DistribCat (Straw k) where
   distl = Straw $ \p -> do
     a <- Snarkl.fst_pair p
     Snarkl.snd_pair p
@@ -178,7 +168,7 @@ instance ConCat.DistribCat Straw where
         (\u -> Snarkl.pair a u >>= Snarkl.inl)
         (\v -> Snarkl.pair a v >>= Snarkl.inr)
 
-instance ConCat.BoolCat Straw where
+instance (GaloisField k) => ConCat.BoolCat (Straw k) where
   notC = Straw $ Snarkl.return . Snarkl.not
   andC = Straw $ \p -> do
     a <- Snarkl.fst_pair p
@@ -193,27 +183,27 @@ instance ConCat.BoolCat Straw where
     b <- Snarkl.snd_pair p
     Snarkl.return $ Snarkl.xor a b
 
-instance ConCat.TerminalCat Straw
+instance ConCat.TerminalCat (Straw k)
 
-instance ConCat.ConstCat Straw Bool where
+instance (GaloisField k) => ConCat.ConstCat (Straw k) Bool where
   const = Straw . bool (\_ -> return Snarkl.false) (\_ -> return Snarkl.true)
 
-instance ConCat.ConstCat Straw Rational where
-  const a = Straw $ \_ -> return $ Snarkl.fromRational a
+instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.ConstCat (Straw k) k where
+  const a = Straw $ \_ -> return $ Snarkl.fromField a
 
-instance ConCat.ConstCat Straw () where
-  const () = Straw $ \_ -> return $ Snarkl.unit
+instance ConCat.ConstCat (Straw k) () where
+  const () = Straw $ \_ -> return Snarkl.unit
 
-instance (Nat.SNatI n) => ConCat.AddCat Straw (Vec ('S n)) Rational where
+instance (Nat.SNatI n, GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.AddCat (Straw k) (Vec ('S n)) k where
   sumAC = Straw $ \a ->
     Snarkl.iterM
       (Nat.reflectToNum (Proxy :: Proxy n))
       (\n' e -> Snarkl.get (a, n') >>= (return . (Snarkl.+ e)))
-      0.0
+      (Snarkl.fromField 0)
 
 instance
-  (ConCat.Ok Straw a, Snarkl.Zippable (SnarklTy a)) =>
-  ConCat.IfCat Straw a
+  (ConCat.Ok (Straw k) a, Snarkl.Zippable (SnarklTy a) k, GaloisField k) =>
+  ConCat.IfCat (Straw k) a
   where
   ifC = Straw $ \p -> do
     b <- Snarkl.snd_pair p
@@ -222,7 +212,7 @@ instance
       (Snarkl.fst_pair b)
       (Snarkl.snd_pair b)
 
-instance ConCat.NumCat Straw Rational where
+instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.NumCat (Straw k) k where
   addC = Straw $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
@@ -238,7 +228,7 @@ instance ConCat.NumCat Straw Rational where
   negateC = Straw $ Snarkl.return . Snarkl.negate
   powIC = error "no exponents"
 
-instance ConCat.EqCat Straw Rational where
+instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.EqCat (Straw k) k where
   equal = Straw $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
@@ -247,13 +237,13 @@ instance ConCat.EqCat Straw Rational where
 cat ::
   (Typeable (SnarklTy a)) =>
   (Typeable (SnarklTy b)) =>
-  Snarkl.TExp (SnarklTy (a -> b)) Rational ->
-  Straw a b
+  Snarkl.TExp (SnarklTy (a -> b)) k ->
+  Straw k a b
 cat f = Straw $ \x -> return $ Snarkl.TEApp f x
 
 lowerCat ::
   (Typeable (SnarklTy a)) =>
   (Typeable (SnarklTy b)) =>
-  Straw a b ->
-  Snarkl.Comp (SnarklTy (a -> b))
+  Straw k a b ->
+  Snarkl.Comp (SnarklTy (a -> b)) k
 lowerCat (Straw f) = Snarkl.lambda f

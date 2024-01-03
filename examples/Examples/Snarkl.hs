@@ -11,10 +11,11 @@ module Examples.Snarkl
   )
 where
 
-import Snarkl.Language (Comp, TExp, Ty (..), arr, forall, fromRational, get, return, set, (+), (>>), (>>=))
-import Prelude (Rational, fromInteger, ($))
+import Snarkl.Field (F_BN128)
+import Snarkl.Language (Comp, TExp, Ty (..), arr, forall, fromField, get, return, set, (+), (>>), (>>=))
+import Prelude (fromInteger, ($))
 
-arr_ex :: TExp 'TField Rational -> Comp 'TField
+arr_ex :: TExp 'TField F_BN128 -> Comp 'TField F_BN128
 arr_ex x = do
   a <- arr 2
   forall [0 .. 1] (\i -> set (a, i) x)
@@ -22,4 +23,4 @@ arr_ex x = do
   z <- get (a, 1)
   return $ y + z
 
-p1 = arr_ex 1.0
+p1 = arr_ex (fromField 1)
