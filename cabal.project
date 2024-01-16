@@ -1,9 +1,8 @@
 source-repository-package
   type: git
   location: https://github.com/con-kitty/categorifier.git
-  -- master branch as of 12/3/23
-  tag: 2eb124f2fbb3ced9ddf60872f571011da4e26dbf
-  --sha256: QLF8PQq6vPwhqXoDs4Txu4Fu3Z9R/rQ6fHWAdIpV/1c=
+  tag: 39ddecc07f41114b14dfc68c35ea1042698f8b77
+  --sha256: yRkxydkQ+3dVnEelPzEoGgc6WcIe0ktYxLVhLEj7K8o=
   subdir: 
    category
    client
@@ -13,6 +12,7 @@ source-repository-package
    th
    integrations/concat/integration
    integrations/vec/integration
+   integrations/ghc-bignum/integration
    plugin
 
 

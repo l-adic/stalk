@@ -6,12 +6,11 @@ module Examples.Arithmetic (simpleBool, simpleArith) where
 
 import qualified Categorifier.Categorify as Categorify
 import Categorifier.Vec.Client ()
-import Data.Field.Galois
 import Snarkl.Field (F_BN128)
 import Snarkl.Language (Ty (..), pair, (>>=))
 import qualified Snarkl.Language.SyntaxMonad as Snarkl
 import Straw (Straw (runStraw))
-import Prelude (Bool (..), fromInteger, (&&), (*), (+), (-), (==))
+import Prelude (Bool (..), fromInteger, (*), (+), (-), (==))
 
 -- we need the because we enabled rebindable syntax
 ifThenElse :: Bool -> a -> a -> a
