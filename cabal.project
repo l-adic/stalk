@@ -73,3 +73,4 @@ tests: True
 
 packages:
   ./straw.cabal
+  ../galois-fields/galois-field.cabal
