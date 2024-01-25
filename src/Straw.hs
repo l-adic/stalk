@@ -27,6 +27,7 @@ import Categorifier.Category
 import qualified Categorifier.Category as Categorifier
 import Categorifier.Vec.Client ()
 import qualified ConCat.Category as ConCat
+import qualified ConCat.Additive
 import Data.Bool (bool)
 import qualified Data.Constraint as Constraint
 import Data.Field.Galois (GaloisField)
@@ -40,6 +41,7 @@ import Snarkl.Field (F_BN128)
 import Snarkl.Language (return, (>>), (>>=))
 import qualified Snarkl.Language as Snarkl
 import Prelude (Bool, Either, error, fromInteger, ($), (+), (.))
+import GHC.Natural (Natural)
 
 -- | Mapping from Haskell types to Snarkl types.
 data Straw k a b = Straw
@@ -94,6 +96,8 @@ type instance SnarklTy Bool = 'Snarkl.TBool
 type instance SnarklTy (Either a b) = 'Snarkl.TSum (SnarklTy a) (SnarklTy b)
 
 type instance SnarklTy F_BN128 = 'Snarkl.TField
+
+type instance SnarklTy Natural = 'Snarkl.TField
 
 type instance SnarklTy (Vec ('S n) a) = 'Snarkl.TArr (SnarklTy a)
 
@@ -194,12 +198,16 @@ instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.ConstCat (Straw 
 instance ConCat.ConstCat (Straw k) () where
   const () = Straw $ \_ -> return Snarkl.unit
 
-instance (Nat.SNatI n, GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.AddCat (Straw k) (Vec ('S n)) k where
+instance (ConCat.Additive.Additive k, Nat.SNatI n, GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.AddCat (Straw k) (Vec ('S n)) k where
   sumAC = Straw $ \a ->
     Snarkl.iterM
       (Nat.reflectToNum (Proxy :: Proxy n))
       (\n' e -> Snarkl.get (a, n') >>= (return . (Snarkl.+ e)))
       (Snarkl.fromField 0)
+
+instance GaloisField k => ConCat.Additive.Additive k where
+  zero  = 0
+  (^+^) = (+)
 
 instance
   (ConCat.Ok (Straw k) a, Snarkl.Zippable (SnarklTy a) k, GaloisField k) =>
@@ -228,7 +236,7 @@ instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.NumCat (Straw k)
   negateC = Straw $ Snarkl.return . Snarkl.negate
   powIC = error "no exponents"
 
-instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.EqCat (Straw k) k where
+instance (GaloisField k, SnarklTy a ~ 'Snarkl.TField) => ConCat.EqCat (Straw k) a where
   equal = Straw $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p

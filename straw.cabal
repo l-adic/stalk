@@ -67,7 +67,7 @@ test-suite examples
     , categorifier-concat-integration
     , categorifier-plugin
     , categorifier-vec-integration
-    , categorifier-ghc-bignum-integration
+ --   , categorifier-ghc-bignum-integration
     , concat-classes
     , galois-field
     , ghc-prim
@@ -90,10 +90,4 @@ test-suite examples
     -fplugin-opt
     Categorifier:maker-map:Categorifier.Vec.Integration.makerMapFun
     -fno-enable-rewrite-rules -fno-ignore-interface-pragmas
-    -fexpose-all-unfoldings -fwarn-unused-imports -fplugin-opt
-    Categorifier:lookup:Categorifier.GhcBignum.Integration.symbolLookup
-    -fplugin-opt
-    Categorifier:maker-map:Categorifier.GhcBignum.Integration.makerMapFun
-
--- No idea what this is doing but some things (e.g. complicatedLens) don't compile without it
--- need -fno-enable-rewrite-rules to avoid `(# ... #)`
+    -fexpose-all-unfoldings -fwarn-unused-imports

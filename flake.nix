@@ -16,7 +16,7 @@
                 hixProject =
                   final.haskell-nix.project {
                     src = ./.;
-                    compiler-nix-name = "ghc90";
+                    compiler-nix-name = "ghc8107";
                     evalSystem = "x86_64-linux";
                   };
                 }
@@ -41,11 +41,11 @@
                   pkgs.hixProject.shellFor {
                     tools = {
                       cabal = {};
-                      haskell-language-server = "2.4.0.0";
+                      # haskell-language-server = "2.4.0.0";
                     };
                     buildInputs = with pkgs; [
-                      haskellPackages.ormolu_0_5_2_0
-                      haskellPackages.cabal-fmt
+                     # haskellPackages.ormolu_0_5_2_0
+                     # haskellPackages.cabal-fmt
                     ];
 
                   };
