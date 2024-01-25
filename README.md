@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/torsion-labs/straw/actions/workflows/nix-ci.yml/badge.svg)
 
-Straw allos you to write Haskell and generate cryptographic circuits. Cryptographic circuits are often written in a low-level language, or a language that has been specifically tailored for such purposes and only superficially resembles a programming language the the programmer is familiar with. With Straw, a pure Haskell expression can be compiled to a circuit for evaluation and verification, supporting common zero-knowledge protocols via [Snarkl](https://github.com/torsion-labs/snarkl) and [arkworks](https://github.com/arkworks-rs/).
+Straw allows you to write a pure Haskell program and have it generate a cryptographic circuit corresponding to that program. Cryptographic circuits are often written in a low-level language, or a language that has been specifically tailored for such purposes and only superficially resembles a programming language the the programmer is familiar with. With Straw, a pure Haskell expression can be compiled to a circuit for evaluation and verification, supporting common zero-knowledge protocols via [Snarkl](https://github.com/torsion-labs/snarkl) and [arkworks](https://github.com/arkworks-rs/).
 
 ## Example
 
