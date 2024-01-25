@@ -72,6 +72,6 @@ constraints:
 tests: True
 
 packages:
-  ./straw.cabal
+  ./stalk.cabal
 --  ../galois-fields/galois-field.cabal
 --  ../modular-arithmetic/modular-arithmetic.cabal

@@ -10,7 +10,7 @@ import Categorifier.Vec.Client ()
 import Snarkl.Field (F_BN128)
 import Snarkl.Language (Ty (TField), pair, (>>=))
 import qualified Snarkl.Language.SyntaxMonad as Snarkl
-import Straw
+import Stalk
 import Prelude (Bool (..), fromInteger, (&&), (*), (+), (-))
 
 -- we need the because we enabled rebindable syntax
@@ -27,7 +27,7 @@ prog1 =
             w = if x then y else y + 2
          in u * u - (w * u * u * y * y * v)
 
-      compiledProg :: Straw F_BN128 (Bool, (F_BN128, Bool)) F_BN128
+      compiledProg :: Stalk F_BN128 (Bool, (F_BN128, Bool)) F_BN128
       compiledProg = Categorify.expression prog
    in do
         x <- Snarkl.fresh_input
@@ -35,7 +35,7 @@ prog1 =
         z <- Snarkl.fresh_input
         yz <- pair y z
         p <- pair x yz
-        runStraw compiledProg p
+        runStalk compiledProg p
 
 -- -- | 1. A standalone "program" in the expression language
 -- prog1
@@ -65,13 +65,13 @@ bool_prog9 =
   let prog :: (Bool, Bool) -> Bool
       prog (x, y) = x && y
 
-      compiledProg :: Straw F_BN128 (Bool, Bool) Bool
+      compiledProg :: Stalk F_BN128 (Bool, Bool) Bool
       compiledProg = Categorify.expression prog
    in do
         x <- Snarkl.fresh_input
         y <- Snarkl.fresh_input
         p <- pair x y
-        runStraw compiledProg p
+        runStalk compiledProg p
 
 -- {-# INLINE catExpr #-}
 -- catExpr expr =
@@ -80,7 +80,7 @@ bool_prog9 =
 --         x <- Snarkl.fresh_input
 --         y <- Snarkl.fresh_input
 --         p <- pair x y
---         runStraw compiledExpr p
+--         runStalk compiledExpr p
 
 -- -- | 9. 'and' test
 -- bool_prog9

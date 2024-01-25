@@ -13,7 +13,7 @@ import Control.Lens
 import Snarkl.Field (F_BN128)
 import Snarkl.Language (Ty (TField), pair, (>>=))
 import qualified Snarkl.Language.SyntaxMonad as Snarkl
-import Straw
+import Stalk
 import Prelude (fromInteger)
 
 data Point = Point {_x :: F_BN128, _y :: F_BN128}
@@ -40,13 +40,13 @@ simpleLens =
             f a n = a & elem +~ n
          in f atom 10 ^. elem
 
-      compiledProg :: Straw F_BN128 (F_BN128, F_BN128) F_BN128
+      compiledProg :: Stalk F_BN128 (F_BN128, F_BN128) F_BN128
       compiledProg = Categorify.expression prog
    in do
         x <- Snarkl.fresh_input
         y <- Snarkl.fresh_input
         p <- pair x y
-        runStraw compiledProg p
+        runStalk compiledProg p
 
 -- complicatedLens :: Snarkl.Comp 'TField F_BN128
 -- complicatedLens =
@@ -59,7 +59,7 @@ simpleLens =
 --            f a n = a & elem +~ n
 --            ls = 1 ::: 2 ::: 3 ::: VNil
 --         in foldl f atom ls ^. elem
---      compiledProg :: Straw F_BN128 (F_BN128, (F_BN128, F_BN128)) F_BN128
+--      compiledProg :: Stalk F_BN128 (F_BN128, (F_BN128, F_BN128)) F_BN128
 --      compiledProg = Categorify.expression prog
 --   in do
 --        x <- Snarkl.fresh_input
@@ -67,4 +67,4 @@ simpleLens =
 --        z <- Snarkl.fresh_input
 --        yz <- pair y z
 --        p <- pair x yz
---        runStraw compiledProg p
+--        runStalk compiledProg p

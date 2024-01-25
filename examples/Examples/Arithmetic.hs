@@ -9,7 +9,7 @@ import Categorifier.Vec.Client ()
 import Snarkl.Field (F_BN128)
 import Snarkl.Language (Ty (..), pair, (>>=))
 import qualified Snarkl.Language.SyntaxMonad as Snarkl
-import Straw (Straw (runStraw))
+import Stalk (Stalk (runStalk))
 import Prelude (Bool (..), fromInteger, (*), (+), (-), (==))
 
 -- we need the because we enabled rebindable syntax
@@ -30,11 +30,11 @@ simpleArith =
         let x = 4 * 4
             y = 2 * x * z - 1
          in x + 1
-      compiledProg :: Straw F_BN128 F_BN128 F_BN128
+      compiledProg :: Stalk F_BN128 F_BN128 F_BN128
       compiledProg = Categorify.expression prog
    in do
         z <- Snarkl.fresh_input
-        runStraw compiledProg z
+        runStalk compiledProg z
 
 {-
 pub x: F;
@@ -54,10 +54,10 @@ simpleBool =
             g = x + 7 - y
          in if g == 0 then 42 else 0
 
-      compiledProg :: Straw F_BN128 (F_BN128, F_BN128) F_BN128
+      compiledProg :: Stalk F_BN128 (F_BN128, F_BN128) F_BN128
       compiledProg = Categorify.expression prog
    in do
         x <- Snarkl.fresh_input
         y <- Snarkl.fresh_input
         p <- pair x y
-        runStraw compiledProg p
+        runStalk compiledProg p

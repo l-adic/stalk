@@ -5,7 +5,7 @@
   outputs = { self, nixpkgs, flake-utils, haskellNix }:
     let
       supportedSystems = [
-        "x86_64-linux"
+        "aarch64-darwin"
       ];
     in
       flake-utils.lib.eachSystem supportedSystems (system:
@@ -17,7 +17,7 @@
                   final.haskell-nix.project {
                     src = ./.;
                     compiler-nix-name = "ghc8107";
-                    evalSystem = "x86_64-linux";
+                    evalSystem = "aarch64-darwin";
                   };
                 }
               )
@@ -27,7 +27,7 @@
       in flake // rec
            { legacyPackages = pkgs;
               packages =  
-                { lib = flake.packages."straw:lib:straw";
+                { lib = flake.packages."stalk:lib:stalk";
                   all = pkgs.symlinkJoin {
                     name = "all";
                     paths = with packages;

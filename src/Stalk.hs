@@ -15,8 +15,8 @@
 {-# HLINT ignore "Use newtype instead of data" #-}
 
 -- | A category for Snarkl
-module Straw
-  ( Straw (..),
+module Stalk
+  ( Stalk (..),
     SnarklTy,
   )
 where
@@ -44,14 +44,14 @@ import Prelude (Bool, Either, error, fromInteger, ($), (+), (.))
 import GHC.Natural (Natural)
 
 -- | Mapping from Haskell types to Snarkl types.
-data Straw k a b = Straw
-  {runStraw :: Snarkl.TExp (SnarklTy a) k -> Snarkl.Comp (SnarklTy b) k}
+data Stalk k a b = Stalk
+  {runStalk :: Snarkl.TExp (SnarklTy a) k -> Snarkl.Comp (SnarklTy b) k}
 
 instance
   (Nat.SNatI n, LiftSnarklTy a k, GaloisField k, Typeable (SnarklTy a)) =>
-  Categorifier.RepCat (Straw k) (Vec ('S ('S n)) a) (a, Vec ('S n) a)
+  Categorifier.RepCat (Stalk k) (Vec ('S ('S n)) a) (a, Vec ('S n) a)
   where
-  abstC = Straw $ \p -> do
+  abstC = Stalk $ \p -> do
     let last = Nat.reflectToNum (Proxy @n)
     a <- Snarkl.arr $ last + 2
     Snarkl.fst_pair p >>= Snarkl.set (a, 0)
@@ -60,7 +60,7 @@ instance
         Snarkl.forall [0 .. last] $
           \i -> Snarkl.get (a', i) >>= Snarkl.set (a, i + 1)
     return a
-  reprC = Straw $ \a -> do
+  reprC = Stalk $ \a -> do
     let last = Nat.reflectToNum (Proxy :: Proxy n)
     let subLen = last + 1
     h <- Snarkl.get (a, 0)
@@ -70,19 +70,19 @@ instance
 
 instance
   (LiftSnarklTy k a, GaloisField k) =>
-  Categorifier.RepCat (Straw k) (Vec ('S 'Z) a) (a, Vec 'Z a)
+  Categorifier.RepCat (Stalk k) (Vec ('S 'Z) a) (a, Vec 'Z a)
   where
-  abstC = Straw $ \p -> do
+  abstC = Stalk $ \p -> do
     a <- Snarkl.arr 1
     Snarkl.fst_pair p >>= Snarkl.set (a, 0)
     return a
-  reprC = Straw $ \a -> do
+  reprC = Stalk $ \a -> do
     h <- Snarkl.get (a, 0)
     Snarkl.pair h Snarkl.unit
 
-instance (LiftSnarklTy k a) => Categorifier.RepCat (Straw k) (Vec 'Z a) () where
-  abstC = Straw return
-  reprC = Straw return
+instance (LiftSnarklTy k a) => Categorifier.RepCat (Stalk k) (Vec 'Z a) () where
+  abstC = Stalk return
+  reprC = Stalk return
 
 type family SnarklTy a :: Snarkl.Ty
 
@@ -108,8 +108,8 @@ type instance SnarklTy (a -> b) = 'Snarkl.TFun (SnarklTy a) (SnarklTy b)
 
 type instance SnarklTy (Const k b) = SnarklTy k
 
-instance (SnarklTy a ~ SnarklTy b) => Categorifier.UnsafeCoerceCat (Straw k) a b where
-  unsafeCoerceK = Straw return
+instance (SnarklTy a ~ SnarklTy b) => Categorifier.UnsafeCoerceCat (Stalk k) a b where
+  unsafeCoerceK = Stalk return
 
 -- | This class exists because we can`t do @`Typeable` . `SnarklTy`@. It has a
 --   universal instance.
@@ -117,89 +117,89 @@ class (Snarkl.Derive (SnarklTy a) k, Typeable (SnarklTy a), Snarkl.Zippable (Sna
 
 instance (Snarkl.Derive (SnarklTy a) k, Typeable (SnarklTy a), Snarkl.Zippable (SnarklTy a) k) => LiftSnarklTy k a
 
-instance (GaloisField k) => ConCat.OpCon (ConCat.Coprod Straw) (ConCat.Sat (LiftSnarklTy k)) where
+instance (GaloisField k) => ConCat.OpCon (ConCat.Coprod Stalk) (ConCat.Sat (LiftSnarklTy k)) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
-instance ConCat.OpCon (ConCat.Exp Straw) (ConCat.Sat (LiftSnarklTy k)) where
+instance ConCat.OpCon (ConCat.Exp Stalk) (ConCat.Sat (LiftSnarklTy k)) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
-instance (GaloisField k) => ConCat.OpCon (ConCat.Prod (Straw k)) (ConCat.Sat (LiftSnarklTy k)) where
+instance (GaloisField k) => ConCat.OpCon (ConCat.Prod (Stalk k)) (ConCat.Sat (LiftSnarklTy k)) where
   inOp = ConCat.Entail (Constraint.Sub Constraint.Dict)
 
-instance ConCat.Category (Straw k) where
-  type Ok (Straw k) = LiftSnarklTy k -- <whatever class SnarklTy ends up in, probably>
-  id = Straw Snarkl.return
-  Straw f . Straw g = Straw $ \x -> g x Snarkl.>>= f
+instance ConCat.Category (Stalk k) where
+  type Ok (Stalk k) = LiftSnarklTy k -- <whatever class SnarklTy ends up in, probably>
+  id = Stalk Snarkl.return
+  Stalk f . Stalk g = Stalk $ \x -> g x Snarkl.>>= f
 
-instance (GaloisField k) => ConCat.ClosedCat (Straw k) where
+instance (GaloisField k) => ConCat.ClosedCat (Stalk k) where
   -- curry :: (TExp ('TProd a b) -> Comp c) -> (TExp a -> Comp ('Mu TF))
-  curry :: (ConCat.Ok3 (Straw k) a b c) => Straw k (ConCat.Prod Straw a b) c -> Straw k a (ConCat.Exp (Straw k) b c)
-  curry (Straw f) = Straw $ Snarkl.curry f
-  uncurry :: (ConCat.Ok3 (Straw k) a b c) => Straw k a (ConCat.Exp (Straw k) b c) -> Straw k (ConCat.Prod (Straw k) a b) c
-  uncurry (Straw f) = Straw $ Snarkl.uncurry f
+  curry :: (ConCat.Ok3 (Stalk k) a b c) => Stalk k (ConCat.Prod Stalk a b) c -> Stalk k a (ConCat.Exp (Stalk k) b c)
+  curry (Stalk f) = Stalk $ Snarkl.curry f
+  uncurry :: (ConCat.Ok3 (Stalk k) a b c) => Stalk k a (ConCat.Exp (Stalk k) b c) -> Stalk k (ConCat.Prod (Stalk k) a b) c
+  uncurry (Stalk f) = Stalk $ Snarkl.uncurry f
 
-instance (GaloisField k) => ConCat.CoproductCat (Straw k) where
-  inl :: (ConCat.Ok2 (Straw k) a b) => Straw k a (ConCat.Coprod (Straw k) a b)
-  inl = Straw Snarkl.inl
-  inr = Straw Snarkl.inr
-  jam = Straw $ Snarkl.case_sum Snarkl.return Snarkl.return
+instance (GaloisField k) => ConCat.CoproductCat (Stalk k) where
+  inl :: (ConCat.Ok2 (Stalk k) a b) => Stalk k a (ConCat.Coprod (Stalk k) a b)
+  inl = Stalk Snarkl.inl
+  inr = Stalk Snarkl.inr
+  jam = Stalk $ Snarkl.case_sum Snarkl.return Snarkl.return
 
-instance (GaloisField k) => ConCat.MonoidalPCat (Straw k) where
-  Straw f *** Straw g = Straw $ \p -> do
+instance (GaloisField k) => ConCat.MonoidalPCat (Stalk k) where
+  Stalk f *** Stalk g = Stalk $ \p -> do
     a <- Snarkl.fst_pair p Snarkl.>>= f
     b <- Snarkl.snd_pair p Snarkl.>>= g
     Snarkl.pair a b
 
-instance (GaloisField k) => ConCat.MonoidalSCat (Straw k) where
-  Straw f +++ Straw g =
-    Straw $
+instance (GaloisField k) => ConCat.MonoidalSCat (Stalk k) where
+  Stalk f +++ Stalk g =
+    Stalk $
       Snarkl.case_sum
         (\a -> f a Snarkl.>>= Snarkl.inl)
         (\b -> g b Snarkl.>>= Snarkl.inr)
 
-instance (GaloisField k) => ConCat.ProductCat (Straw k) where
-  exl = Straw Snarkl.fst_pair
-  exr = Straw Snarkl.snd_pair
-  dup = Straw $ \x -> Snarkl.pair x x
+instance (GaloisField k) => ConCat.ProductCat (Stalk k) where
+  exl = Stalk Snarkl.fst_pair
+  exr = Stalk Snarkl.snd_pair
+  dup = Stalk $ \x -> Snarkl.pair x x
 
-instance (GaloisField k) => ConCat.BraidedPCat (Straw k)
+instance (GaloisField k) => ConCat.BraidedPCat (Stalk k)
 
-instance (GaloisField k) => ConCat.DistribCat (Straw k) where
-  distl = Straw $ \p -> do
+instance (GaloisField k) => ConCat.DistribCat (Stalk k) where
+  distl = Stalk $ \p -> do
     a <- Snarkl.fst_pair p
     Snarkl.snd_pair p
       >>= Snarkl.case_sum
         (\u -> Snarkl.pair a u >>= Snarkl.inl)
         (\v -> Snarkl.pair a v >>= Snarkl.inr)
 
-instance (GaloisField k) => ConCat.BoolCat (Straw k) where
-  notC = Straw $ Snarkl.return . Snarkl.not
-  andC = Straw $ \p -> do
+instance (GaloisField k) => ConCat.BoolCat (Stalk k) where
+  notC = Stalk $ Snarkl.return . Snarkl.not
+  andC = Stalk $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return $ a Snarkl.&& b
-  orC = Straw $ \p -> do
+  orC = Stalk $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return . Snarkl.not $ Snarkl.not a Snarkl.&& Snarkl.not b
-  xorC = Straw $ \p -> do
+  xorC = Stalk $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return $ Snarkl.xor a b
 
-instance ConCat.TerminalCat (Straw k)
+instance ConCat.TerminalCat (Stalk k)
 
-instance (GaloisField k) => ConCat.ConstCat (Straw k) Bool where
-  const = Straw . bool (\_ -> return Snarkl.false) (\_ -> return Snarkl.true)
+instance (GaloisField k) => ConCat.ConstCat (Stalk k) Bool where
+  const = Stalk . bool (\_ -> return Snarkl.false) (\_ -> return Snarkl.true)
 
-instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.ConstCat (Straw k) k where
-  const a = Straw $ \_ -> return $ Snarkl.fromField a
+instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.ConstCat (Stalk k) k where
+  const a = Stalk $ \_ -> return $ Snarkl.fromField a
 
-instance ConCat.ConstCat (Straw k) () where
-  const () = Straw $ \_ -> return Snarkl.unit
+instance ConCat.ConstCat (Stalk k) () where
+  const () = Stalk $ \_ -> return Snarkl.unit
 
-instance (ConCat.Additive.Additive k, Nat.SNatI n, GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.AddCat (Straw k) (Vec ('S n)) k where
-  sumAC = Straw $ \a ->
+instance (ConCat.Additive.Additive k, Nat.SNatI n, GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.AddCat (Stalk k) (Vec ('S n)) k where
+  sumAC = Stalk $ \a ->
     Snarkl.iterM
       (Nat.reflectToNum (Proxy :: Proxy n))
       (\n' e -> Snarkl.get (a, n') >>= (return . (Snarkl.+ e)))
@@ -210,34 +210,34 @@ instance GaloisField k => ConCat.Additive.Additive k where
   (^+^) = (+)
 
 instance
-  (ConCat.Ok (Straw k) a, Snarkl.Zippable (SnarklTy a) k, GaloisField k) =>
-  ConCat.IfCat (Straw k) a
+  (ConCat.Ok (Stalk k) a, Snarkl.Zippable (SnarklTy a) k, GaloisField k) =>
+  ConCat.IfCat (Stalk k) a
   where
-  ifC = Straw $ \p -> do
+  ifC = Stalk $ \p -> do
     b <- Snarkl.snd_pair p
     Snarkl.ifThenElse
       (Snarkl.fst_pair p)
       (Snarkl.fst_pair b)
       (Snarkl.snd_pair b)
 
-instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.NumCat (Straw k) k where
-  addC = Straw $ \p -> do
+instance (GaloisField k, SnarklTy k ~ 'Snarkl.TField) => ConCat.NumCat (Stalk k) k where
+  addC = Stalk $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return $ a Snarkl.+ b
-  mulC = Straw $ \p -> do
+  mulC = Stalk $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return $ a Snarkl.* b
-  subC = Straw $ \p -> do
+  subC = Stalk $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return $ a Snarkl.- b
-  negateC = Straw $ Snarkl.return . Snarkl.negate
+  negateC = Stalk $ Snarkl.return . Snarkl.negate
   powIC = error "no exponents"
 
-instance (GaloisField k, SnarklTy a ~ 'Snarkl.TField) => ConCat.EqCat (Straw k) a where
-  equal = Straw $ \p -> do
+instance (GaloisField k, SnarklTy a ~ 'Snarkl.TField) => ConCat.EqCat (Stalk k) a where
+  equal = Stalk $ \p -> do
     a <- Snarkl.fst_pair p
     b <- Snarkl.snd_pair p
     Snarkl.return $ Snarkl.eq a b
@@ -246,12 +246,12 @@ cat ::
   (Typeable (SnarklTy a)) =>
   (Typeable (SnarklTy b)) =>
   Snarkl.TExp (SnarklTy (a -> b)) k ->
-  Straw k a b
-cat f = Straw $ \x -> return $ Snarkl.TEApp f x
+  Stalk k a b
+cat f = Stalk $ \x -> return $ Snarkl.TEApp f x
 
 lowerCat ::
   (Typeable (SnarklTy a)) =>
   (Typeable (SnarklTy b)) =>
-  Straw k a b ->
+  Stalk k a b ->
   Snarkl.Comp (SnarklTy (a -> b)) k
-lowerCat (Straw f) = Snarkl.lambda f
+lowerCat (Stalk f) = Snarkl.lambda f

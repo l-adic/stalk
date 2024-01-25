@@ -4,7 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Examples.Straw
+module Examples.Stalk
   ( mult_ex,
     arr_ex,
     p1,
@@ -23,7 +23,7 @@ import Data.Field.Galois (GaloisField)
 import Data.Vec.Lazy (Vec (..))
 import Snarkl.Field (F_BN128)
 import qualified Snarkl.Language as Snarkl
-import Straw
+import Stalk
 import "snarkl" Snarkl.Language (fromField, (>>=))
 import Prelude (Bool (..), Either (..), fromInteger, sum, ($), (*), (+), (.))
 
@@ -42,12 +42,12 @@ arr_ex x =
       sum a
 
 p1 :: Snarkl.Comp 'Snarkl.TField F_BN128
-p1 = runStraw (Categorify.expression arr_ex) (fromField @F_BN128 1)
+p1 = runStalk (Categorify.expression arr_ex) (fromField @F_BN128 1)
 
 p2 :: Snarkl.State (Snarkl.Env F_BN128) (Snarkl.TExp 'Snarkl.TField F_BN128)
 p2 =
   Snarkl.fresh_input
-    >>= runStraw (Categorify.expression $ \(x :: F_BN128) -> x + x)
+    >>= runStalk (Categorify.expression $ \(x :: F_BN128) -> x + x)
 
 comp1 :: Either Bool F_BN128
 comp1 = Left False
@@ -55,9 +55,9 @@ comp1 = Left False
 comp2 :: Either Bool F_BN128
 comp2 = Right 0
 
--- | __TODO__: Needs @`ConCat.Category.ClosedCat` `Straw`@
+-- | __TODO__: Needs @`ConCat.Category.ClosedCat` `Stalk`@
 test1 :: Snarkl.State (Snarkl.Env F_BN128) (Snarkl.TExp 'Snarkl.TBool F_BN128)
 test1 =
   Snarkl.fresh_input
-    >>= runStraw
+    >>= runStalk
       (Categorify.expression $ fromLeft False . bool comp2 comp1)
