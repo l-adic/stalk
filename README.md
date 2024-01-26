@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/torsion-labs/straw/actions/workflows/nix-ci.yml/badge.svg)
 
-Straw allows you to write a pure Haskell program and have it generate a cryptographic circuit corresponding to that program. Cryptographic circuits are often written in a low-level language, or a language that has been specifically tailored for such purposes and only superficially resembles a programming language the the programmer is familiar with. With Straw, a pure Haskell expression can be compiled to a circuit for evaluation and verification, supporting common zero-knowledge protocols via [Snarkl](https://github.com/torsion-labs/snarkl) and [arkworks](https://github.com/arkworks-rs/).
+Straw allows you to write a pure Haskell program and generate a system of arithmetic constraints corresponding to that program. Such constraint languages are often written in terms of a low-level "gadget library", or a language that has been specifically tailored for such purposes and only superficially resembles a programming language the the programmer is familiar with. With Straw, a pure Haskell expression can be compiled to a circuit for evaluation and verification, supporting common zero-knowledge protocols via [Snarkl](https://github.com/torsion-labs/snarkl) and [arkworks](https://github.com/arkworks-rs/).
 
 ## Example
 
@@ -10,7 +10,7 @@ A tutorial is currently in-progress, but for an example it is instructive to com
 
 # Approach
 
-Straw implements a Cartesian closed category for [Snorkl](https://github.com/torsion-labs/snarkl) and provides tooling to work with the [Categorifier](https://github.com/con-kitty/categorifier) GHC plugin. This is a very general approach spearheaded by Conal Elliott's [concat](https://github.com/compiling-to-categories/concat) library. In general, one has to implement the typeclasses for an increasingly expressive cartesian closed category that matches the capability of the target, which in this case is Snorkel. The purpose of this library is to follow snorkel closely and to allow as general Haskell expressions as possible to be compiled to zero-knowledge circuits.
+Straw implements a Cartesian closed category for [Snorkl](https://github.com/torsion-labs/snarkl) and provides tooling to work with the [Categorifier](https://github.com/con-kitty/categorifier) GHC plugin. This is a very general approach spearheaded by Conal Elliott's [concat](https://github.com/compiling-to-categories/concat) library. In general, one has to implement the typeclasses for an increasingly expressive cartesian closed category that matches the capability of the target, which in this case is Snorkel. The purpose of this library is to follow snorkel closely and to allow as general Haskell expressions as possible to be compiled to constraint languages amenable for zero knowledge proving protocols.
 
 # Usage
 
