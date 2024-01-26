@@ -1,4 +1,4 @@
-# Straw
+# Stalk
 
 Compiling Haskell to cryptographic circuits.
 

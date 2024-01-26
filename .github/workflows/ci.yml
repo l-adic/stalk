@@ -14,5 +14,5 @@ jobs:
       with:
         name: martyall
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - run: nix build
+    - run: nix develop --command cabal update
     - run: nix develop --command cabal run tests

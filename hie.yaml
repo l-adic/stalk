@@ -1,10 +1,10 @@
 cradle:
   cabal:
     - path: "./src"
-      component: "lib:straw"
+      component: "lib:stalk"
 
     - path: "./examples"
-      component: "straw:test:examples"
+      component: "stalk:test:examples"
 
     - path: "../categorifier/integrations/concat/integration/./"
       component: "lib:categorifier-concat-integration"

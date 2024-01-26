@@ -1,59 +1,32 @@
 {
-  inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
-  inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
   inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
-  outputs = { self, nixpkgs, flake-utils, flake-compat, haskellNix }:
-    let
-      supportedSystems = [
-        "x86_64-linux"
-      ];
-    in
-      flake-utils.lib.eachSystem supportedSystems (system:
-      let
-        overlays =
-          [ haskellNix.overlay
-              (final: prev: {
-                hixProject =
-                  final.haskell-nix.project {
-                    src = ./.;
-                    compiler-nix-name = "ghc90";
-                    evalSystem = "x86_64-linux";
-                  };
-                }
-              )
-          ];
-        pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
-        flake = pkgs.hixProject.flake {};
-      in flake // rec
-           { legacyPackages = pkgs;
-              packages =  
-                { lib = flake.packages."straw:lib:straw";
-                  all = pkgs.symlinkJoin {
-                    name = "all";
-                    paths = with packages;
-                      [ lib
-                      ];
-                  };
-                  default = packages.all;
-                };
-             devShells =
-               { default =
-                  pkgs.hixProject.shellFor {
-                    tools = {
-                      cabal = {};
-                      haskell-language-server = "2.4.0.0";
-                    };
-                    buildInputs = with pkgs; [
-                      haskellPackages.ormolu_0_5_2_0
-                      haskellPackages.cabal-fmt
-                    ];
 
-                  };
-               };
-           }
-      );
-  nixConfig = {
-    allow-import-from-derivation = true;
-  };
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+        hpkgs = pkgs.haskell.packages.ghc8107;
+
+      in {
+        formatter = pkgs.nixfmt;
+
+        devShells = let
+          ## The minimal dependency set to build the project with `cabal`.
+          buildInputs = ([ hpkgs.ghc ]) ++ (with pkgs; [
+            cabal-install
+            zlib
+          ]);
+
+        in {
+          ci = pkgs.mkShell {
+            inherit buildInputs;
+          };
+
+          default = pkgs.mkShell {
+            buildInputs = buildInputs ++ (with pkgs; [ ormolu hpack hlint ]);
+          };
+        };
+      });
 }
