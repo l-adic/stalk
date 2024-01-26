@@ -1,6 +1,6 @@
 # Stalk
 
-![CI](https://github.com/l-adic/stalk/actions/workflows/nix-ci.yml/badge.svg)
+![CI](https://github.com/l-adic/stalk/actions/workflows/ci.yml/badge.svg)
 
 Stalk allows you to write a pure Haskell program and generate a system of arithmetic constraints corresponding to that program. Such constraint languages are often written in terms of a low-level "gadget libraries", or a language that has been specifically tailored for such purposes and only superficially resemble a "normal" programming language. Other approaches attempt to take advantage of existing compilers targeting e.g. RISC-V, but the resulting compiled programs are not "first class" expressions in the language. With Stalk, a pure Haskell expression can be compiled to an equivalent constraint representation which is first class in the Haskell language. These expressions can be futher compiled for use in zero-knowledge protocols using [Snarkl](https://github.com/l-adic/snarkl) and [arkworks](https://github.com/arkworks-rs/).
 
