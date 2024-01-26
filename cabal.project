@@ -12,13 +12,11 @@ source-repository-package
    th
    integrations/concat/integration
    integrations/vec/integration
- --  integrations/ghc-bignum/integration
    plugin
 
 source-repository-package
   type: git
   location: https://github.com/con-kitty/concat.git
-  -- ghc9 branch as of 12/3/23
   tag: cb398e15d142ca198ccd9f952cdc4e74104c9c12
   --sha256: BCu7IdKNhxq0Jf9iEW9LaV4qC3Ir1gxP91b0EBom4CQ=
   subdir:
