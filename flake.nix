@@ -1,58 +1,50 @@
 {
-  inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
-  inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  outputs = { self, nixpkgs, flake-utils, haskellNix }:
-    let
-      supportedSystems = [
-        "aarch64-darwin"
-      ];
-    in
-      flake-utils.lib.eachSystem supportedSystems (system:
-      let
-        overlays =
-          [ haskellNix.overlay
-              (final: prev: {
-                hixProject =
-                  final.haskell-nix.project {
-                    src = ./.;
-                    compiler-nix-name = "ghc8107";
-                    evalSystem = "aarch64-darwin";
-                  };
-                }
-              )
-          ];
-        pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
-        flake = pkgs.hixProject.flake {};
-      in flake // rec
-           { legacyPackages = pkgs;
-              packages =  
-                { lib = flake.packages."stalk:lib:stalk";
-                  all = pkgs.symlinkJoin {
-                    name = "all";
-                    paths = with packages;
-                      [ lib
-                      ];
-                  };
-                  default = packages.all;
-                };
-             devShells =
-               { default =
-                  pkgs.hixProject.shellFor {
-                    tools = {
-                      cabal = {};
-                      # haskell-language-server = "2.4.0.0";
-                    };
-                    buildInputs = with pkgs; [
-                     # haskellPackages.ormolu_0_5_2_0
-                     # haskellPackages.cabal-fmt
-                    ];
+  description = "A type for integers modulo some constant.";
 
-                  };
-               };
-           }
-      );
-  nixConfig = {
-    allow-import-from-derivation = true;
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils";
   };
+
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+        haskellPackages = pkgs.haskellPackages;
+
+        package = ghc:
+          pkgs.haskell.packages."${ghc}".developPackage {
+            name = "stalk";
+            root = ./.;
+
+            overrides = self: super: with pkgs.haskell.lib; { };
+          };
+
+        shellFor = ghc:
+          pkgs.haskell.packages."${ghc}".shellFor {
+            packages = p: [ (package ghc)  ];
+
+            buildInputs = with haskellPackages; [
+              cabal-install
+              ghcid
+              haskell-language-server
+
+              pkgs.haskellPackages.cabal-fmt
+              pkgs.nixpkgs-fmt
+            ];
+          };
+      in
+      rec {
+        # TODO: cleaner way to manage multiple GHC versions...
+        packages = {
+          stalk_8107 = package "ghc8107";
+        };
+
+        devShells = {
+          stalk_8107 = shellFor "ghc8107";
+        };
+
+        defaultPackage = packages.stalk_8107;
+        devShell = devShells.stalk_8107;
+      });
 }
