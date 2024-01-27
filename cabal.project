@@ -28,7 +28,7 @@ source-repository-package
 source-repository-package
  type: git
  location: https://github.com/l-adic/snarkl.git
- tag: 5d539a7827f570ee6e9dbf9a30e898acccd6c0cb
+ tag: c2561b898d93fd444ca57aaf8b2ad8b203f19489
  --sha256: jHy2OKlvSgBAkvtadvDVB0t3Hr2wTgXTFKW5T2t/yi0=
 
 source-repository-package

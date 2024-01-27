@@ -15,10 +15,10 @@ import qualified Snarkl.Toplevel as Snarkl
 
 -- | Little helper to get our expressions into a form that Hedgehog can compare.
 comparable :: (Typeable ty, GaloisField k) => Snarkl.Comp ty k -> String
-comparable = show . Snarkl.compileCompToR1CS Snarkl.Simplify
+comparable = show . Snarkl.compileCompToR1CS [Snarkl.Simplify]
 
 interpretable :: (Typeable ty, GaloisField k) => Snarkl.Comp ty k -> [k] -> k
-interpretable = Snarkl.comp_interp
+interpretable comp is = Snarkl.comp_interp comp is mempty
 
 prop_simple_bool :: Hedgehog.Property
 prop_simple_bool =

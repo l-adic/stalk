@@ -7,8 +7,8 @@ module Examples.Arithmetic (simpleBool, simpleArith) where
 import qualified Categorifier.Categorify as Categorify
 import Categorifier.Vec.Client ()
 import Snarkl.Field (F_BN128)
-import Snarkl.Language (Ty (..), pair, (>>=))
-import qualified Snarkl.Language.SyntaxMonad as Snarkl
+import Snarkl.Language.Prelude (Ty (..), pair, (>>=))
+import qualified Snarkl.Language.Prelude as Snarkl
 import Stalk (Stalk (runStalk))
 import Prelude (Bool (..), fromInteger, (*), (+), (-), (==))
 
@@ -33,7 +33,7 @@ simpleArith =
       compiledProg :: Stalk F_BN128 F_BN128 F_BN128
       compiledProg = Categorify.expression prog
    in do
-        z <- Snarkl.fresh_input
+        z <- Snarkl.fresh_public_input
         runStalk compiledProg z
 
 {-
@@ -57,7 +57,7 @@ simpleBool =
       compiledProg :: Stalk F_BN128 (F_BN128, F_BN128) F_BN128
       compiledProg = Categorify.expression prog
    in do
-        x <- Snarkl.fresh_input
-        y <- Snarkl.fresh_input
+        x <- Snarkl.fresh_public_input
+        y <- Snarkl.fresh_public_input
         p <- pair x y
         runStalk compiledProg p

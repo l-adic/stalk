@@ -8,8 +8,8 @@ module Examples.SnarklUnitTests where
 import qualified Categorifier.Categorify as Categorify
 import Categorifier.Vec.Client ()
 import Snarkl.Field (F_BN128)
-import Snarkl.Language (Ty (TField), pair, (>>=))
-import qualified Snarkl.Language.SyntaxMonad as Snarkl
+import Snarkl.Language.Prelude (Ty (TField), pair, (>>=))
+import qualified Snarkl.Language.Prelude as Snarkl
 import Stalk
 import Prelude (Bool (..), fromInteger, (&&), (*), (+), (-))
 
@@ -30,9 +30,9 @@ prog1 =
       compiledProg :: Stalk F_BN128 (Bool, (F_BN128, Bool)) F_BN128
       compiledProg = Categorify.expression prog
    in do
-        x <- Snarkl.fresh_input
-        y <- Snarkl.fresh_input
-        z <- Snarkl.fresh_input
+        x <- Snarkl.fresh_public_input
+        y <- Snarkl.fresh_public_input
+        z <- Snarkl.fresh_public_input
         yz <- pair y z
         p <- pair x yz
         runStalk compiledProg p
@@ -68,8 +68,8 @@ bool_prog9 =
       compiledProg :: Stalk F_BN128 (Bool, Bool) Bool
       compiledProg = Categorify.expression prog
    in do
-        x <- Snarkl.fresh_input
-        y <- Snarkl.fresh_input
+        x <- Snarkl.fresh_public_input
+        y <- Snarkl.fresh_public_input
         p <- pair x y
         runStalk compiledProg p
 

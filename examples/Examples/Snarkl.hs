@@ -12,7 +12,7 @@ module Examples.Snarkl
 where
 
 import Snarkl.Field (F_BN128)
-import Snarkl.Language (Comp, TExp, Ty (..), arr, forall, fromField, get, return, set, (+), (>>), (>>=))
+import Snarkl.Language.Prelude (Comp, TExp, Ty (..), arr, forall, fromField, get, return, set, (+), (>>), (>>=))
 import Prelude (fromInteger, ($))
 
 arr_ex :: TExp 'TField F_BN128 -> Comp 'TField F_BN128
