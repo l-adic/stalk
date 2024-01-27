@@ -26,8 +26,8 @@ import Categorifier.Category
   )
 import qualified Categorifier.Category as Categorifier
 import Categorifier.Vec.Client ()
-import qualified ConCat.Category as ConCat
 import qualified ConCat.Additive
+import qualified ConCat.Category as ConCat
 import Data.Bool (bool)
 import qualified Data.Constraint as Constraint
 import Data.Field.Galois (GaloisField)
@@ -37,11 +37,11 @@ import Data.Type.Nat (Nat (..))
 import qualified Data.Type.Nat as Nat
 import Data.Typeable (Typeable)
 import Data.Vec.Lazy (Vec (..))
-import Snarkl.Field (F_BN128)
-import Snarkl.Language (return, (>>), (>>=))
-import qualified Snarkl.Language as Snarkl
-import Prelude (Bool, Either, error, fromInteger, ($), (+), (.))
 import GHC.Natural (Natural)
+import Snarkl.Field (F_BN128)
+import Snarkl.Language.Prelude (return, (>>), (>>=))
+import qualified Snarkl.Language.Prelude as Snarkl
+import Prelude (Bool, Either, error, fromInteger, ($), (+), (.))
 
 -- | Mapping from Haskell types to Snarkl types.
 data Stalk k a b = Stalk
@@ -205,8 +205,8 @@ instance (ConCat.Additive.Additive k, Nat.SNatI n, GaloisField k, SnarklTy k ~ '
       (\n' e -> Snarkl.get (a, n') >>= (return . (Snarkl.+ e)))
       (Snarkl.fromField 0)
 
-instance GaloisField k => ConCat.Additive.Additive k where
-  zero  = 0
+instance (GaloisField k) => ConCat.Additive.Additive k where
+  zero = 0
   (^+^) = (+)
 
 instance
@@ -247,7 +247,7 @@ cat ::
   (Typeable (SnarklTy b)) =>
   Snarkl.TExp (SnarklTy (a -> b)) k ->
   Stalk k a b
-cat f = Stalk $ \x -> return $ Snarkl.TEApp f x
+cat f = Stalk $ \x -> Snarkl.apply f x
 
 lowerCat ::
   (Typeable (SnarklTy a)) =>

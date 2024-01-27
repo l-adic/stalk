@@ -76,6 +76,8 @@ test-suite examples
     , snarkl
     , stalk
     , vec
+    , wl-pprint-text
+
 
   default-language: Haskell2010
   ghc-options:
