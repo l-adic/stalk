@@ -10,7 +10,7 @@ import Snarkl.Field (F_BN128)
 import Snarkl.Language.Prelude (Ty (..), pair, (>>=))
 import qualified Snarkl.Language.Prelude as Snarkl
 import Stalk (Stalk (runStalk))
-import Prelude (Bool (..), fromInteger, (*), (+), (-), (==))
+import Prelude (Bool (..), fromInteger, (*), (+), (-), (==), (&&))
 
 -- we need the because we enabled rebindable syntax
 ifThenElse :: Bool -> a -> a -> a
@@ -50,9 +50,9 @@ simpleBool :: Snarkl.Comp 'TField F_BN128
 simpleBool =
   let prog :: (F_BN128, F_BN128) -> F_BN128
       prog (x, y) =
-        let -- f = x * x + 2 * x + 1 - y
+        let f = x * x + 2 * x + 1 - y
             g = x + 7 - y
-         in if g == 0 then 42 else 0
+         in if f == 0 && g == 0 then 42 else 0
 
       compiledProg :: Stalk F_BN128 (F_BN128, F_BN128) F_BN128
       compiledProg = Categorify.expression prog
